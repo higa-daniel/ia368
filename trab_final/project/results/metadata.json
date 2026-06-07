@@ -1,0 +1,50 @@
+{
+  "env_name": "Pendulum-v1",
+  "timesteps": 2000,
+  "seeds": [
+    1,
+    2
+  ],
+  "eval_episodes": 5,
+  "save_models": false,
+  "sac_configs": [
+    {
+      "label": "SAC-1",
+      "ent_coef": 0.01
+    },
+    {
+      "label": "SAC-2",
+      "ent_coef": 0.05
+    },
+    {
+      "label": "SAC-3",
+      "ent_coef": 0.1
+    },
+    {
+      "label": "SAC-4",
+      "ent_coef": 0.2
+    },
+    {
+      "label": "SAC-5",
+      "ent_coef": "auto"
+    }
+  ],
+  "td3_configs": [
+    {
+      "label": "TD3-1",
+      "sigma": 0.05
+    },
+    {
+      "label": "TD3-2",
+      "sigma": 0.1
+    },
+    {
+      "label": "TD3-3",
+      "sigma": 0.2
+    },
+    {
+      "label": "TD3-4",
+      "sigma": 0.3
+    }
+  ]
+}
