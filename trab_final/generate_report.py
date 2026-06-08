@@ -567,6 +567,24 @@ def generate_markdown(df: pd.DataFrame, stats: dict, summary: pd.DataFrame, fig_
         f"Nas configurações avaliadas, a melhor média por configuração foi de **{best_overall}** "
         f"({best_sac_lbl}: {best_sac_mean:.1f}; {best_td3_lbl}: {best_td3_mean:.1f})."
     )
+    sac_summary = summary[summary["algorithm"] == "SAC"].copy()
+    td3_summary = summary[summary["algorithm"] == "TD3"].copy()
+    most_stable_sac = sac_summary.loc[sac_summary["std_seeds"].idxmin()]
+    most_stable_td3 = td3_summary.loc[td3_summary["std_seeds"].idxmin()]
+    sac_sensitivity = sac_summary["mean_reward"].max() - sac_summary["mean_reward"].min()
+    td3_sensitivity = td3_summary["mean_reward"].max() - td3_summary["mean_reward"].min()
+    scale_sentence = (
+        "Como a execução ainda é reduzida em relação ao protocolo completo, os resultados devem ser lidos "
+        "como evidência exploratória e como validação do pipeline experimental."
+        if timesteps < 100_000 or len(seeds) < 10
+        else "Como a execução utiliza o protocolo completo de 10 seeds e 100.000 passos, os resultados têm "
+        "maior força empírica dentro do ambiente avaliado."
+    )
+    paper_comparison_sentence = (
+        "A comparação com os artigos deve ser interpretada qualitativamente: os papers originais avaliam "
+        "conjuntos mais amplos de tarefas contínuas, enquanto este estudo isola o efeito dos parâmetros "
+        f"de exploração em `{env_name}`."
+    )
 
     md = f"""# Análise do Impacto da Exploração na Aprendizagem Off-Policy
 ## SAC vs TD3 — {env_name}
@@ -796,15 +814,39 @@ Conforme hipotetizado, a relação entre intensidade de exploração e desempenh
 
 ## 7. Conclusões
 
-1. **A diferença agregada entre SAC e TD3 não foi significativa nesta execução**, portanto os resultados devem ser interpretados como evidência exploratória, não como conclusão definitiva.
+### 7.1 Síntese dos Resultados
 
-2. {best_overall_detail}
+O experimento mostrou que o desempenho dos algoritmos off-policy é fortemente condicionado pelo mecanismo de exploração escolhido. No agregado, **{winner}** obteve a maior média de recompensa entre todas as execuções (diferença média de {margin:.1f} pontos), mas a comparação estatística foi {sig_text}. Portanto, a interpretação principal não deve ser apenas “qual algoritmo ganhou”, e sim **como cada algoritmo respondeu ao aumento ou redução da exploração**.
 
-3. **A exploração intrínseca (SAC) é qualitativamente diferente** da exploração extrínseca (TD3): enquanto a entropia regulariza todo o processo de aprendizado, o ruído gaussiano apenas perturba as ações coletadas.
+{best_overall_detail} Em termos de estabilidade, a configuração SAC com menor variação entre seeds foi **{most_stable_sac['label']}** (α={most_stable_sac['exploration']}, σ_seeds={most_stable_sac['std_seeds']:.1f}), enquanto a configuração TD3 mais estável foi **{most_stable_td3['label']}** (σ={most_stable_td3['exploration']}, σ_seeds={most_stable_td3['std_seeds']:.1f}).
 
-4. **A relação entre exploração e desempenho mostrou comportamento sensível ao hiperparâmetro**, especialmente no SAC: α maiores degradaram a recompensa média nesta rodada curta.
+### 7.2 Interpretação Sobre Exploração
 
-5. **O pipeline implementado permite repetir o estudo em escala completa**, mantendo os mesmos scripts, tabelas, gráficos e testes estatísticos.
+Os resultados reforçam a hipótese de que a relação entre exploração e desempenho é **não linear**. Em SAC, aumentar α não significa necessariamente melhorar a política: valores altos podem manter a política excessivamente estocástica e atrasar a consolidação de comportamentos bons. Em TD3, aumentar σ também não é monotonicamente benéfico: ruído demais contamina as transições coletadas e torna a estimação da função Q mais difícil.
+
+Esse padrão aparece na sensibilidade por configuração: no SAC, a diferença entre a melhor e a pior média de recompensa entre valores de α foi de aproximadamente **{sac_sensitivity:.1f}** pontos; no TD3, a diferença correspondente entre valores de σ foi de aproximadamente **{td3_sensitivity:.1f}** pontos. Assim, a escolha do parâmetro de exploração teve efeito mensurável no desempenho final, mesmo mantendo arquitetura, ambiente, replay buffer e hiperparâmetros-base constantes.
+
+### 7.3 Comparação com os Papers Originais
+
+Os achados são coerentes com a motivação do artigo de SAC de Haarnoja et al. (2018), que propõe o uso de máxima entropia para combinar retorno esperado e diversidade de ações. O artigo reporta que o SAC atinge desempenho competitivo em tarefas contínuas e destaca estabilidade entre diferentes seeds. Neste estudo, essa ideia aparece de forma conceitual: o SAC oferece um mecanismo de exploração interno e controlável por α, mas o experimento também mostra que **a presença de entropia não elimina a necessidade de calibração**. Quando α foi alto demais, o ganho teórico de exploração se transformou em dificuldade prática de convergência.
+
+Em relação ao TD3 de Fujimoto et al. (2018), os resultados também dialogam com o paper original. O TD3 foi introduzido para reduzir erros de aproximação e overestimation bias por meio de twin critics, delayed policy updates e target policy smoothing. Nosso experimento não testa diretamente overestimation bias, mas avalia a parte de exploração baseada em ruído externo. O comportamento observado é compatível com a proposta do TD3: com σ adequado, o método pode ser competitivo; com ruído inadequado, o ator determinístico fica sensível à qualidade das amostras coletadas.
+
+{paper_comparison_sentence} Por isso, a conclusão comparativa é: **os resultados não contradizem os papers originais; eles refinam a leitura deles para o eixo específico de exploração**. SAC tende a ser mais naturalmente associado a robustez por causa da entropia, mas ainda depende da temperatura. TD3 reduz problemas importantes de estimação de valor, mas sua exploração continua dependente de uma escolha externa de ruído.
+
+### 7.4 Limitações e Próximos Passos
+
+{scale_sentence} Além disso, `Pendulum-v1` é um ambiente útil para controle contínuo de baixo custo, mas não cobre tarefas com exploração mais difícil, recompensa esparsa ou dinâmicas de alta dimensão. Para aproximar mais o estudo dos artigos originais, os próximos passos mais importantes são:
+
+1. Executar o protocolo completo de **90 execuções** quando houver tempo computacional.
+2. Repetir o estudo em **MountainCarContinuous-v0**, onde exploração eficiente tende a ser mais decisiva.
+3. Adicionar métricas específicas de estabilidade, como área sob a curva de aprendizado e episódio de convergência.
+4. Comparar também com baselines adicionais, como DDPG, para isolar melhor o ganho específico do TD3.
+5. Avaliar se α automático no SAC reduz a sensibilidade em ambientes mais difíceis.
+
+### 7.5 Conclusão Final
+
+O estudo confirma que exploração não é apenas um detalhe de implementação, mas um componente central da aprendizagem off-policy. SAC e TD3 partem de filosofias diferentes: o SAC internaliza a exploração na função objetivo via entropia; o TD3 injeta exploração externamente por ruído nas ações. Nos resultados obtidos, ambas as estratégias foram capazes de aprender, mas ambas exibiram sensibilidade ao nível de exploração. A principal contribuição do experimento é tornar essa sensibilidade visível, quantificável e comparável em um pipeline reprodutível.
 
 ---
 

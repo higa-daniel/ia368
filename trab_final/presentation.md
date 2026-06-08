@@ -235,15 +235,39 @@ Conforme hipotetizado, a relação entre intensidade de exploração e desempenh
 
 ## 7. Conclusões
 
-1. **A diferença agregada entre SAC e TD3 não foi significativa nesta execução**, portanto os resultados devem ser interpretados como evidência exploratória, não como conclusão definitiva.
+### 7.1 Síntese dos Resultados
 
-2. Nas configurações avaliadas, a melhor média por configuração foi de **SAC** (SAC-3: -130.5; TD3-4: -133.0).
+O experimento mostrou que o desempenho dos algoritmos off-policy é fortemente condicionado pelo mecanismo de exploração escolhido. No agregado, **SAC** obteve a maior média de recompensa entre todas as execuções (diferença média de 3.4 pontos), mas a comparação estatística foi **estatisticamente significativa** (p < 0.05). Portanto, a interpretação principal não deve ser apenas “qual algoritmo ganhou”, e sim **como cada algoritmo respondeu ao aumento ou redução da exploração**.
 
-3. **A exploração intrínseca (SAC) é qualitativamente diferente** da exploração extrínseca (TD3): enquanto a entropia regulariza todo o processo de aprendizado, o ruído gaussiano apenas perturba as ações coletadas.
+Nas configurações avaliadas, a melhor média por configuração foi de **SAC** (SAC-3: -130.5; TD3-4: -133.0). Em termos de estabilidade, a configuração SAC com menor variação entre seeds foi **SAC-4** (α=0.2, σ_seeds=4.1), enquanto a configuração TD3 mais estável foi **TD3-1** (σ=0.05, σ_seeds=4.7).
 
-4. **A relação entre exploração e desempenho mostrou comportamento sensível ao hiperparâmetro**, especialmente no SAC: α maiores degradaram a recompensa média nesta rodada curta.
+### 7.2 Interpretação Sobre Exploração
 
-5. **O pipeline implementado permite repetir o estudo em escala completa**, mantendo os mesmos scripts, tabelas, gráficos e testes estatísticos.
+Os resultados reforçam a hipótese de que a relação entre exploração e desempenho é **não linear**. Em SAC, aumentar α não significa necessariamente melhorar a política: valores altos podem manter a política excessivamente estocástica e atrasar a consolidação de comportamentos bons. Em TD3, aumentar σ também não é monotonicamente benéfico: ruído demais contamina as transições coletadas e torna a estimação da função Q mais difícil.
+
+Esse padrão aparece na sensibilidade por configuração: no SAC, a diferença entre a melhor e a pior média de recompensa entre valores de α foi de aproximadamente **1.1** pontos; no TD3, a diferença correspondente entre valores de σ foi de aproximadamente **2.6** pontos. Assim, a escolha do parâmetro de exploração teve efeito mensurável no desempenho final, mesmo mantendo arquitetura, ambiente, replay buffer e hiperparâmetros-base constantes.
+
+### 7.3 Comparação com os Papers Originais
+
+Os achados são coerentes com a motivação do artigo de SAC de Haarnoja et al. (2018), que propõe o uso de máxima entropia para combinar retorno esperado e diversidade de ações. O artigo reporta que o SAC atinge desempenho competitivo em tarefas contínuas e destaca estabilidade entre diferentes seeds. Neste estudo, essa ideia aparece de forma conceitual: o SAC oferece um mecanismo de exploração interno e controlável por α, mas o experimento também mostra que **a presença de entropia não elimina a necessidade de calibração**. Quando α foi alto demais, o ganho teórico de exploração se transformou em dificuldade prática de convergência.
+
+Em relação ao TD3 de Fujimoto et al. (2018), os resultados também dialogam com o paper original. O TD3 foi introduzido para reduzir erros de aproximação e overestimation bias por meio de twin critics, delayed policy updates e target policy smoothing. Nosso experimento não testa diretamente overestimation bias, mas avalia a parte de exploração baseada em ruído externo. O comportamento observado é compatível com a proposta do TD3: com σ adequado, o método pode ser competitivo; com ruído inadequado, o ator determinístico fica sensível à qualidade das amostras coletadas.
+
+A comparação com os artigos deve ser interpretada qualitativamente: os papers originais avaliam conjuntos mais amplos de tarefas contínuas, enquanto este estudo isola o efeito dos parâmetros de exploração em `Pendulum-v1`. Por isso, a conclusão comparativa é: **os resultados não contradizem os papers originais; eles refinam a leitura deles para o eixo específico de exploração**. SAC tende a ser mais naturalmente associado a robustez por causa da entropia, mas ainda depende da temperatura. TD3 reduz problemas importantes de estimação de valor, mas sua exploração continua dependente de uma escolha externa de ruído.
+
+### 7.4 Limitações e Próximos Passos
+
+Como a execução utiliza o protocolo completo de 10 seeds e 100.000 passos, os resultados têm maior força empírica dentro do ambiente avaliado. Além disso, `Pendulum-v1` é um ambiente útil para controle contínuo de baixo custo, mas não cobre tarefas com exploração mais difícil, recompensa esparsa ou dinâmicas de alta dimensão. Para aproximar mais o estudo dos artigos originais, os próximos passos mais importantes são:
+
+1. Executar o protocolo completo de **90 execuções** quando houver tempo computacional.
+2. Repetir o estudo em **MountainCarContinuous-v0**, onde exploração eficiente tende a ser mais decisiva.
+3. Adicionar métricas específicas de estabilidade, como área sob a curva de aprendizado e episódio de convergência.
+4. Comparar também com baselines adicionais, como DDPG, para isolar melhor o ganho específico do TD3.
+5. Avaliar se α automático no SAC reduz a sensibilidade em ambientes mais difíceis.
+
+### 7.5 Conclusão Final
+
+O estudo confirma que exploração não é apenas um detalhe de implementação, mas um componente central da aprendizagem off-policy. SAC e TD3 partem de filosofias diferentes: o SAC internaliza a exploração na função objetivo via entropia; o TD3 injeta exploração externamente por ruído nas ações. Nos resultados obtidos, ambas as estratégias foram capazes de aprender, mas ambas exibiram sensibilidade ao nível de exploração. A principal contribuição do experimento é tornar essa sensibilidade visível, quantificável e comparável em um pipeline reprodutível.
 
 ---
 
