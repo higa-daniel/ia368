@@ -11,17 +11,15 @@
 
 Este trabalho investiga como diferentes níveis de **exploração** afetam o desempenho de dois algoritmos off-policy amplamente utilizados em Deep Reinforcement Learning: **Soft Actor-Critic (SAC)** e **Twin Delayed Deep Deterministic Policy Gradient (TD3)**.
 
-Foram realizados **18 experimentos** no ambiente **Pendulum-v1** (Gymnasium), variando:
+Foram realizados **90 experimentos** no ambiente **Pendulum-v1** (Gymnasium), variando:
 - SAC: coeficiente de entropia α ∈ {0.01, 0.05, 0.10, 0.20, auto}
 - TD3: desvio-padrão do ruído σ ∈ {0.05, 0.10, 0.20, 0.30}
-- Cada configuração treinada com **2 seed(s)** (1-2) × **2,000 passos**
-- Avaliação determinística com **5 episódio(s)** por execução
+- Cada configuração treinada com **10 seed(s)** (1-10) × **100,000 passos**
+- Avaliação determinística com **20 episódio(s)** por execução
 
-**Resultado principal:** O algoritmo **TD3** obteve desempenho médio superior  
-(SAC: -1557.9 ± 110.4 vs TD3: -1478.7 ± 49.9),  
-com diferença **não significativa** (p = 0.077).
-
-> **Nota metodológica:** esta apresentação foi gerada com uma execução rápida (2 seed(s), 2,000 passos) para validar o pipeline completo. Para conclusões finais de pesquisa, recomenda-se executar a configuração completa de 10 seeds × 100.000 passos.
+**Resultado principal:** O algoritmo **SAC** obteve desempenho médio superior  
+(SAC: -130.9 ± 4.2 vs TD3: -134.3 ± 5.2),  
+com diferença **estatisticamente significativa** (p < 0.05).
 
 
 ---
@@ -80,9 +78,9 @@ $$a_t = \mu_\theta(s_t) + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma^2)
 | τ (soft update) | 0.005 |
 | γ (desconto) | 0.99 |
 | Learning starts | 1.000 |
-| Total timesteps | 2,000 |
-| Seeds | 1-2 |
-| Episódios de avaliação | 5 |
+| Total timesteps | 100,000 |
+| Seeds | 1-10 |
+| Episódios de avaliação | 20 |
 
 **Configurações de Exploração:**
 
@@ -158,8 +156,8 @@ O heatmap abaixo revela como cada combinação de configuração e seed se compo
 
 | Algoritmo | Média | Desvio-Padrão | IC 95% |
 |-----------|-------|---------------|--------|
-| SAC (todas configs) | -1557.9 | 110.4 | [-1630.0, -1485.7] |
-| TD3 (todas configs) | -1478.7 | 49.9 | [-1515.6, -1441.7] |
+| SAC (todas configs) | -130.9 | 4.2 | [-132.1, -129.8] |
+| TD3 (todas configs) | -134.3 | 5.2 | [-135.9, -132.7] |
 
 ### 5.2 Testes de Hipótese
 
@@ -169,31 +167,31 @@ O heatmap abaixo revela como cada combinação de configuração e seed se compo
 
 | Teste | Estatística | p-valor | Resultado |
 |-------|-------------|---------|-----------|
-| t de Student (Welch) | -1.915 | 0.0774 | Não rejeita H₀ |
-| Mann-Whitney U | 20 | 0.0831 | Não rejeita H₀ |
+| t de Student (Welch) | 3.302 | 0.0015 | Rejeita H₀ ✓ |
+| Mann-Whitney U | 1397 | 0.0013 | Rejeita H₀ ✓ |
 
-A diferença entre os algoritmos foi **não significativa** (p = 0.077).
+A diferença entre os algoritmos foi **estatisticamente significativa** (p < 0.05).
 
 ### 5.3 Tabela Consolidada de Resultados
 
 | Algoritmo | Configuração | Exploração | Recompensa Média ± σ_seeds | IC 95% | Recompensa Máx. | Tempo | RAM |
 |-----------|-------------|------------|---------------------------|--------|-----------------|-------|-----|
-| SAC | SAC-1 | α=0.01 | -1415.8 ± 61.3 | [-1500.8, -1330.8] | -1297.7 | 6.2s | 317.7 MB |
-| SAC | SAC-2 | α=0.05 | -1469.4 ± 18.9 | [-1495.6, -1443.2] | -1347.6 | 5.2s | 333.1 MB |
-| SAC | SAC-3 | α=0.1 | -1543.4 ± 33.1 | [-1589.3, -1497.5] | -1403.8 | 5.2s | 304.8 MB |
-| SAC | SAC-4 | α=0.2 | -1680.1 ± 1.4 | [-1682.0, -1678.2] | -1511.6 | 5.2s | 278.8 MB |
-| SAC | SAC-5 | α=auto | -1680.7 ± 17.0 | [-1704.3, -1657.1] | -1447.9 | 5.4s | 269.3 MB |
-| TD3 | TD3-1 | σ=0.05 | -1460.1 ± 28.9 | [-1500.2, -1420.0] | -1258.2 | 4.5s | 281.7 MB |
-| TD3 | TD3-2 | σ=0.1 | -1478.7 ± 43.3 | [-1538.7, -1418.7] | -1312.3 | 5.1s | 240.6 MB |
-| TD3 | TD3-3 | σ=0.2 | -1461.5 ± 21.4 | [-1491.2, -1431.8] | -1279.1 | 6.3s | 208.5 MB |
-| TD3 | TD3-4 | σ=0.3 | -1514.3 ± 113.9 | [-1672.2, -1356.4] | -1281.0 | 6.9s | 221.1 MB |
+| SAC | SAC-1 | α=0.01 | -131.6 ± 4.3 | [-134.3, -128.9] | -1.7 | 509.2s | 132.8 MB |
+| SAC | SAC-2 | α=0.05 | -130.6 ± 4.5 | [-133.4, -127.8] | -0.6 | 506.8s | 108.3 MB |
+| SAC | SAC-3 | α=0.1 | -130.5 ± 4.4 | [-133.2, -127.8] | -0.5 | 542.6s | 104.9 MB |
+| SAC | SAC-4 | α=0.2 | -131.3 ± 4.1 | [-133.8, -128.8] | -0.5 | 545.7s | 102.2 MB |
+| SAC | SAC-5 | α=auto | -130.8 ± 4.5 | [-133.6, -128.0] | -1.3 | 539.3s | 102.0 MB |
+| TD3 | TD3-1 | σ=0.05 | -135.6 ± 4.7 | [-138.5, -132.7] | -4.6 | 451.8s | 115.1 MB |
+| TD3 | TD3-2 | σ=0.1 | -134.8 ± 5.8 | [-138.4, -131.2] | -4.5 | 453.9s | 115.2 MB |
+| TD3 | TD3-3 | σ=0.2 | -133.9 ± 5.7 | [-137.4, -130.4] | -3.4 | 488.9s | 115.5 MB |
+| TD3 | TD3-4 | σ=0.3 | -133.0 ± 5.0 | [-136.1, -129.9] | -3.0 | 476.1s | 114.6 MB |
 
 ### 5.4 Melhor Configuração por Algoritmo
 
 | Algoritmo | Melhor Config | Parâmetro | Recompensa Média |
 |-----------|--------------|-----------|-----------------|
-| SAC | SAC-1 | α=0.01 | -1415.8 |
-| TD3 | TD3-1 | σ=0.05 | -1460.1 |
+| SAC | SAC-3 | α=0.1 | -130.5 |
+| TD3 | TD3-4 | σ=0.3 | -133.0 |
 
 ---
 
@@ -239,7 +237,7 @@ Conforme hipotetizado, a relação entre intensidade de exploração e desempenh
 
 1. **A diferença agregada entre SAC e TD3 não foi significativa nesta execução**, portanto os resultados devem ser interpretados como evidência exploratória, não como conclusão definitiva.
 
-2. Nas configurações avaliadas, a melhor média por configuração foi de **SAC** (SAC-1: -1415.8; TD3-1: -1460.1).
+2. Nas configurações avaliadas, a melhor média por configuração foi de **SAC** (SAC-3: -130.5; TD3-4: -133.0).
 
 3. **A exploração intrínseca (SAC) é qualitativamente diferente** da exploração extrínseca (TD3): enquanto a entropia regulariza todo o processo de aprendizado, o ruído gaussiano apenas perturba as ações coletadas.
 

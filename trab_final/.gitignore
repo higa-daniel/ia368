@@ -1,9 +1,9 @@
 # Python environments
 .venv/
-.mplconfig/
 venv/
 env/
 .env
+
 # Python caches and build artifacts
 __pycache__/
 *.pyc
@@ -17,10 +17,13 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+
 # Jupyter
 .ipynb_checkpoints/
+
 # Local plotting/cache directories
 .mplconfig/
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
@@ -28,10 +31,12 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
 # Experiment artifacts that are large or reproducible
 project/models/
 project/logs/
 project/videos/
+
 # Stable-Baselines/TensorBoard logs
 *.monitor.csv
 events.out.tfevents.*

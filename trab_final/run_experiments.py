@@ -4,9 +4,11 @@ Experimento: Impacto da Exploração em SAC vs TD3 — Pendulum-v1
 Autores: Daniel Higa & Luan
 Disciplina: IA368 — UNICAMP 2026
 
-Configuração:
+Configuração completa:
   - SAC: α ∈ {0.01, 0.05, 0.10, 0.20, 'auto'}  × 10 seeds × 100k steps
   - TD3: σ ∈ {0.05, 0.10, 0.20, 0.30}            × 10 seeds × 100k steps
+Preset completo:
+  - Todas as 9 configurações × 10 seeds = 90 execuções balanceadas
   - Ambiente: Pendulum-v1
 """
 
@@ -263,6 +265,7 @@ def parse_args():
     parser.add_argument("--seeds", default="1-10", help="Seeds: use '1-10' ou '1,2,3'.")
     parser.add_argument("--eval-episodes", type=int, default=EVAL_EPISODES, help="Episodios de avaliacao.")
     parser.add_argument("--quick", action="store_true", help="Atalho: 2 seeds, 2.000 passos e 5 episodios de avaliacao.")
+    parser.add_argument("--medium", action="store_true", help="Atalho completo: 10 seeds, 100.000 passos e 20 episodios de avaliacao (90 execucoes).")
     parser.add_argument("--no-save-models", action="store_true", help="Nao salva modelos .zip.")
     return parser.parse_args()
 
@@ -277,11 +280,18 @@ def parse_seed_spec(spec: str) -> list[int]:
 def configure_from_args(args) -> None:
     global ENV_NAME, TIMESTEPS, SEEDS, EVAL_EPISODES, SAVE_MODELS, EXPERIMENT_METADATA
 
+    if args.quick and args.medium:
+        raise ValueError("Use apenas um preset: --quick ou --medium.")
+
     if args.quick:
         args.timesteps = 2_000
         args.seeds = "1,2"
         args.eval_episodes = 5
         args.no_save_models = True
+    elif args.medium:
+        args.timesteps = 100_000
+        args.seeds = "1-10"
+        args.eval_episodes = 20
 
     ENV_NAME = args.env
     TIMESTEPS = args.timesteps
