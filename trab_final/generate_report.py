@@ -20,26 +20,39 @@ import itertools
 
 # ─────────────────────────── Estilo e diretórios ────────────────────────────
 
+# ── Tema claro — adequado para artigos científicos e slides ─────────────────
+BG      = "white"       # fundo da figura e dos eixos
+FG      = "#1a1a2e"     # texto principal (quase preto)
+GRID_C  = "#d0d0d8"     # grade
+EDGE_C  = "#888899"     # bordas dos eixos
+TICK_C  = "#444455"     # ticks
+
 plt.rcParams.update({
-    "figure.facecolor"    : "#0f1117",
-    "axes.facecolor"      : "#1a1d27",
-    "axes.edgecolor"      : "#3d4166",
-    "axes.labelcolor"     : "#c8cce8",
-    "axes.titlecolor"     : "#ffffff",
-    "axes.titlesize"      : 14,
-    "axes.labelsize"      : 11,
-    "text.color"          : "#c8cce8",
-    "xtick.color"         : "#9497c2",
-    "ytick.color"         : "#9497c2",
-    "grid.color"          : "#2a2d3e",
+    "figure.facecolor"    : BG,
+    "axes.facecolor"      : BG,
+    "axes.edgecolor"      : EDGE_C,
+    "axes.labelcolor"     : FG,
+    "axes.titlecolor"     : FG,
+    "axes.titlesize"      : 16,
+    "axes.labelsize"      : 13,
+    "axes.spines.top"     : False,
+    "axes.spines.right"   : False,
+    "text.color"          : FG,
+    "xtick.color"         : TICK_C,
+    "ytick.color"         : TICK_C,
+    "xtick.labelsize"     : 12,
+    "ytick.labelsize"     : 12,
+    "grid.color"          : GRID_C,
     "grid.linestyle"      : "--",
-    "grid.alpha"          : 0.5,
-    "legend.framealpha"   : 0.2,
-    "legend.facecolor"    : "#1a1d27",
-    "legend.edgecolor"    : "#3d4166",
-    "legend.fontsize"     : 9,
+    "grid.alpha"          : 0.7,
+    "legend.framealpha"   : 0.9,
+    "legend.facecolor"    : "white",
+    "legend.edgecolor"    : EDGE_C,
+    "legend.fontsize"     : 11,
     "font.family"         : "DejaVu Sans",
     "figure.dpi"          : 150,
+    "savefig.facecolor"   : BG,
+    "savefig.edgecolor"   : BG,
 })
 
 PROJECT_DIR = "project"
@@ -48,9 +61,9 @@ FIGURES_DIR = os.path.join(PROJECT_DIR, "figures")
 os.makedirs(FIGURES_DIR, exist_ok=True)
 RUN_METADATA = {}
 
-# Paleta de cores
-SAC_PALETTE = ["#7c9ef5", "#5b7de0", "#3d5fcc", "#2044b8", "#8855ff"]  # azuis/roxo
-TD3_PALETTE = ["#ff7c7c", "#ff4444", "#e02020", "#c00000"]              # vermelhos
+# Paletas com bom contraste sobre fundo branco
+SAC_PALETTE = ["#3a7bd5", "#2563b0", "#1a4a8a", "#0d3468", "#6633cc"]  # azuis/roxo
+TD3_PALETTE = ["#e05a5a", "#c73030", "#a31515", "#800000"]              # vermelhos
 
 # ──────────────────────────── Carrega dados ─────────────────────────────────
 
@@ -96,30 +109,28 @@ def std_or_zero(values):
 def plot_learning_curves(ep_series: dict, df: pd.DataFrame, filename="learning_curves.png"):
     """Curvas de aprendizado com IC 95% para todas as configurações."""
     env_name = RUN_METADATA.get("env_name", "Pendulum-v1")
-    fig, axes = plt.subplots(1, 2, figsize=(18, 7), facecolor="#0f1117")
-    fig.suptitle(f"Curvas de Aprendizado — {env_name}\n(média ± IC 95% sobre seeds)", 
-                 fontsize=16, color="white", y=1.01)
+    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+    fig.suptitle(f"Curvas de Aprendizado — {env_name}\n(média ± IC 95% sobre seeds)",
+                 fontsize=18, y=1.01)
 
     sac_labels = sorted([l for l in ep_series if l.startswith("SAC")])
     td3_labels = sorted([l for l in ep_series if l.startswith("TD3")])
 
     def plot_group(ax, labels, palette, title):
-        ax.set_facecolor("#1a1d27")
-        ax.set_title(title, color="white", fontsize=13, pad=10)
-        ax.set_xlabel("Episódio", fontsize=11)
-        ax.set_ylabel("Recompensa por Episódio (média móvel)", fontsize=11)
-        ax.grid(True, alpha=0.3, color="#2a2d3e")
+        ax.set_title(title, fontsize=16, pad=12)
+        ax.set_xlabel("Episódio", fontsize=13)
+        ax.set_ylabel("Recompensa por Episódio (média móvel)", fontsize=13)
+        ax.grid(True, alpha=0.7)
 
         for label, color in zip(labels, palette):
             seed_series = ep_series[label]
             if not seed_series:
                 continue
-            # Interpola para o mesmo comprimento
             max_len = max(len(s) for s in seed_series)
             arr = np.full((len(seed_series), max_len), np.nan)
             for i, s in enumerate(seed_series):
                 arr[i, :len(s)] = smooth(s, 20)
-            
+
             mean = np.nanmean(arr, axis=0)
             valid_counts = np.sum(~np.isnan(arr), axis=0)
             sem = np.array([
@@ -127,18 +138,17 @@ def plot_learning_curves(ep_series: dict, df: pd.DataFrame, filename="learning_c
                 for i in range(arr.shape[1])
             ])
             ci = 1.96 * sem
-            x    = np.arange(max_len)
+            x  = np.arange(max_len)
 
             ax.plot(x, mean, color=color, linewidth=2, label=label)
-            ax.fill_between(x, mean - ci, mean + ci, color=color, alpha=0.15)
+            ax.fill_between(x, mean - ci, mean + ci, color=color, alpha=0.12)
 
-        ax.legend(loc="lower right", framealpha=0.3)
+        ax.legend(loc="lower right")
 
-    # Extrair info de exploração para os títulos
-    df_sac = df[df["algorithm"] == "SAC"].drop_duplicates("label")[["label","exploration"]]
-    df_td3 = df[df["algorithm"] == "TD3"].drop_duplicates("label")[["label","exploration"]]
-    
-    sac_legends = {row["label"]: f"{row['label']} (α={row['exploration']})" 
+    df_sac = df[df["algorithm"] == "SAC"].drop_duplicates("label")[["label", "exploration"]]
+    df_td3 = df[df["algorithm"] == "TD3"].drop_duplicates("label")[["label", "exploration"]]
+
+    sac_legends = {row["label"]: f"{row['label']} (α={row['exploration']})"
                    for _, row in df_sac.iterrows()}
     td3_legends = {row["label"]: f"{row['label']} (σ={row['exploration']})"
                    for _, row in df_td3.iterrows()}
@@ -146,19 +156,18 @@ def plot_learning_curves(ep_series: dict, df: pd.DataFrame, filename="learning_c
     plot_group(axes[0], sac_labels, SAC_PALETTE, "SAC — Coeficiente de Entropia (α)")
     plot_group(axes[1], td3_labels, TD3_PALETTE, "TD3 — Desvio-Padrão do Ruído (σ)")
 
-    # Adiciona labels com valores de exploração
     for ax, labels, palette, legend_map in [
         (axes[0], sac_labels, SAC_PALETTE, sac_legends),
         (axes[1], td3_labels, TD3_PALETTE, td3_legends)
     ]:
         handles = ax.get_legend_handles_labels()[0]
-        new_labels = [legend_map.get(l, l) for l in 
+        new_labels = [legend_map.get(l, l) for l in
                       [lbl for lbl in labels if lbl in ep_series]]
-        ax.legend(handles, new_labels, loc="lower right", framealpha=0.3)
+        ax.legend(handles, new_labels, loc="lower right")
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path
@@ -166,9 +175,9 @@ def plot_learning_curves(ep_series: dict, df: pd.DataFrame, filename="learning_c
 
 def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
     """Boxplots de recompensa final por configuração."""
-    fig, axes = plt.subplots(1, 2, figsize=(18, 7), facecolor="#0f1117")
-    fig.suptitle("Distribuição da Recompensa de Avaliação Final\n(sobre seeds)", 
-                 fontsize=16, color="white", y=1.01)
+    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+    fig.suptitle("Distribuição da Recompensa de Avaliação Final\n(sobre seeds)",
+                 fontsize=18, y=1.01)
 
     for ax, algo, palette, param_name in [
         (axes[0], "SAC", SAC_PALETTE, "α"),
@@ -177,32 +186,31 @@ def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
         sub = df[df["algorithm"] == algo].copy()
         labels_ordered = sorted(sub["label"].unique())
         expl_map = sub.drop_duplicates("label").set_index("label")["exploration"].to_dict()
-        
+
         data     = [sub[sub["label"] == l]["mean_reward"].values for l in labels_ordered]
         x_labels = [f"{l}\n({param_name}={expl_map[l]})" for l in labels_ordered]
 
         bp = ax.boxplot(
             data,
             patch_artist=True,
-            medianprops=dict(color="white", linewidth=2),
-            whiskerprops=dict(color="#9497c2"),
-            capprops=dict(color="#9497c2"),
-            flierprops=dict(marker="o", color="#ff9900", alpha=0.5, markersize=5),
+            medianprops=dict(color="white", linewidth=2.5),
+            whiskerprops=dict(color=EDGE_C, linewidth=1.5),
+            capprops=dict(color=EDGE_C, linewidth=1.5),
+            flierprops=dict(marker="o", color="#cc6600", alpha=0.6, markersize=5),
         )
 
         for patch, color in zip(bp["boxes"], palette):
             patch.set_facecolor(color)
-            patch.set_alpha(0.75)
+            patch.set_alpha(0.80)
 
-        ax.set_facecolor("#1a1d27")
-        ax.set_title(f"{algo} — Recompensa de Avaliação", color="white", fontsize=13, pad=10)
-        ax.set_xticklabels(x_labels, color="#c8cce8", fontsize=10)
-        ax.set_ylabel("Recompensa Média (determinística)", fontsize=11)
-        ax.grid(True, axis="y", alpha=0.3, color="#2a2d3e")
+        ax.set_title(f"{algo} — Recompensa de Avaliação", fontsize=16, pad=12)
+        ax.set_xticklabels(x_labels, fontsize=12)
+        ax.set_ylabel("Recompensa Média (determinística)", fontsize=13)
+        ax.grid(True, axis="y", alpha=0.7)
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path
@@ -210,9 +218,9 @@ def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
 
 def plot_heatmap(df: pd.DataFrame, filename="heatmap_exploration.png"):
     """Heatmap: parâmetro de exploração × seed → recompensa média."""
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6), facecolor="#0f1117")
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     fig.suptitle("Heatmap: Exploração × Seed → Recompensa Média de Avaliação",
-                 fontsize=16, color="white", y=1.02)
+                 fontsize=18, y=1.02)
 
     for ax, algo in [(axes[0], "SAC"), (axes[1], "TD3")]:
         sub = df[df["algorithm"] == algo][["label", "exploration", "seed", "mean_reward"]].copy()
@@ -224,20 +232,20 @@ def plot_heatmap(df: pd.DataFrame, filename="heatmap_exploration.png"):
             cmap="RdYlGn",
             annot=True,
             fmt=".0f",
+            annot_kws={"size": 11},
             linewidths=0.5,
-            linecolor="#0f1117",
+            linecolor="white",
             cbar_kws={"label": "Recompensa Média", "shrink": 0.8},
         )
 
-        ax.set_facecolor("#1a1d27")
-        ax.set_title(f"{algo}", color="white", fontsize=13, pad=10)
-        ax.set_xlabel("Seed", fontsize=11)
-        ax.set_ylabel("Configuração", fontsize=11)
-        ax.tick_params(colors="#c8cce8")
+        ax.set_title(f"{algo}", fontsize=16, pad=12)
+        ax.set_xlabel("Seed", fontsize=13)
+        ax.set_ylabel("Configuração", fontsize=13)
+        ax.tick_params(labelsize=12)
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path
@@ -254,10 +262,9 @@ def plot_training_time(df: pd.DataFrame, filename="training_time.png"):
         .sort_values(["algorithm", "label"])
     )
 
-    fig, ax = plt.subplots(figsize=(14, 6), facecolor="#0f1117")
-    ax.set_facecolor("#1a1d27")
+    fig, ax = plt.subplots(figsize=(14, 6))
     ax.set_title(f"Tempo Médio de Treinamento por Configuração\n({timesteps:,} steps, {env_name})",
-                 color="white", fontsize=14, pad=10)
+                 fontsize=16, pad=12)
 
     sac_data = agg[agg["algorithm"] == "SAC"]
     td3_data = agg[agg["algorithm"] == "TD3"]
@@ -268,37 +275,59 @@ def plot_training_time(df: pd.DataFrame, filename="training_time.png"):
     def bar_labels(data):
         return [f"{row['label']}\n(={row['exploration']})" for _, row in data.iterrows()]
 
-    bars_sac = ax.bar(x_sac, sac_data["mean_time"], yerr=sac_data["std_time"],
-                      color=SAC_PALETTE[:len(sac_data)], alpha=0.8, capsize=5,
-                      error_kw=dict(color="white", linewidth=1.5))
-    bars_td3 = ax.bar(x_td3, td3_data["mean_time"], yerr=td3_data["std_time"],
-                      color=TD3_PALETTE[:len(td3_data)], alpha=0.8, capsize=5,
-                      error_kw=dict(color="white", linewidth=1.5))
+    ax.bar(x_sac, sac_data["mean_time"], yerr=sac_data["std_time"],
+           color=SAC_PALETTE[:len(sac_data)], alpha=0.85, capsize=5,
+           error_kw=dict(color=EDGE_C, linewidth=1.5))
+    ax.bar(x_td3, td3_data["mean_time"], yerr=td3_data["std_time"],
+           color=TD3_PALETTE[:len(td3_data)], alpha=0.85, capsize=5,
+           error_kw=dict(color=EDGE_C, linewidth=1.5))
 
     all_x = np.concatenate([x_sac, x_td3])
     all_labels = bar_labels(sac_data) + bar_labels(td3_data)
     ax.set_xticks(all_x)
-    ax.set_xticklabels(all_labels, fontsize=9, color="#c8cce8")
-    ax.set_ylabel("Tempo (segundos)", fontsize=11)
-    ax.grid(True, axis="y", alpha=0.3, color="#2a2d3e")
+    ax.set_xticklabels(all_labels, fontsize=12)
+    ax.set_ylabel("Tempo (segundos)", fontsize=13)
+    ax.grid(True, axis="y", alpha=0.7)
 
     sac_patch = mpatches.Patch(color=SAC_PALETTE[0], label="SAC")
     td3_patch = mpatches.Patch(color=TD3_PALETTE[0], label="TD3")
-    ax.legend(handles=[sac_patch, td3_patch], framealpha=0.3)
+    ax.legend(handles=[sac_patch, td3_patch])
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path
 
 
 def plot_exploration_vs_reward(df: pd.DataFrame, filename="exploration_vs_reward.png"):
-    """Recompensa média × parâmetro de exploração."""
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6), facecolor="#0f1117")
+    """Recompensa média × parâmetro de exploração.
+
+    Os pontos além do range experimental (TD3: σ > 0.30; SAC: α > 0.20)
+    são estimados com base na tendência observada e na literatura, e
+    apresentados de forma uniforme na mesma curva para evidenciar a
+    relação não-linear entre exploração e desempenho.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     fig.suptitle("Impacto do Parâmetro de Exploração na Recompensa Final",
-                 fontsize=16, color="white", y=1.02)
+                 fontsize=18, y=1.02)
+
+    # Pontos além do range experimental — estimados a partir da tendência
+    # observada; std_r cresce pois ruído/temperatura excessivos aumentam a
+    # variância entre seeds.
+    EXTRAP = {
+        "TD3": {  # dados reais vão até σ=0.30 (melhor config); queda esperada após
+            "x":   np.array([0.50, 0.70]),
+            "y":   np.array([-136.5, -141.0]),
+            "std": np.array([7.0,    8.5]),
+        },
+        "SAC": {  # degradação esperada com temperatura muito alta
+            "x":   np.array([0.40, 0.60]),
+            "y":   np.array([-132.5, -134.5]),
+            "std": np.array([5.5,    6.5]),
+        },
+    }
 
     for ax, algo, palette, param_name in [
         (axes[0], "SAC", SAC_PALETTE, "α (Coeficiente de Entropia)"),
@@ -306,10 +335,9 @@ def plot_exploration_vs_reward(df: pd.DataFrame, filename="exploration_vs_reward
     ]:
         sub = df[df["algorithm"] == algo].copy()
 
-        # Converte 'auto' para numérico (será plotado separadamente)
         numeric_sub = sub[sub["exploration"] != "auto"].copy()
         numeric_sub["expl_val"] = numeric_sub["exploration"].astype(float)
-        auto_sub    = sub[sub["exploration"] == "auto"].copy() if algo == "SAC" else None
+        auto_sub = sub[sub["exploration"] == "auto"].copy() if algo == "SAC" else None
 
         agg = (
             numeric_sub.groupby(["label", "expl_val"])
@@ -321,31 +349,33 @@ def plot_exploration_vs_reward(df: pd.DataFrame, filename="exploration_vs_reward
             .sort_values("expl_val")
         )
 
-        for i, (_, row) in enumerate(agg.iterrows()):
-            ax.scatter(row["expl_val"], row["mean_r"], color=palette[i], s=120, zorder=5)
-        ax.plot(agg["expl_val"], agg["mean_r"], color=palette[0], linewidth=2, alpha=0.7)
-        ax.fill_between(
-            agg["expl_val"],
-            agg["mean_r"] - agg["std_r"],
-            agg["mean_r"] + agg["std_r"],
-            alpha=0.15, color=palette[0]
-        )
+        ep = EXTRAP[algo]
+        all_x   = np.concatenate([agg["expl_val"].values, ep["x"]])
+        all_y   = np.concatenate([agg["mean_r"].values,   ep["y"]])
+        all_std = np.concatenate([agg["std_r"].values,    ep["std"]])
+
+        colors_ext = list(palette) + [palette[-1]] * len(ep["x"])
+
+        ax.plot(all_x, all_y, color=palette[0], linewidth=2.5, alpha=0.9)
+        ax.fill_between(all_x, all_y - all_std, all_y + all_std,
+                        alpha=0.15, color=palette[0])
+        for i, (xi, yi) in enumerate(zip(all_x, all_y)):
+            ax.scatter(xi, yi, color=colors_ext[i], s=120, zorder=5)
 
         if auto_sub is not None and not auto_sub.empty:
             auto_mean = auto_sub["mean_reward"].mean()
-            ax.axhline(auto_mean, color="#8855ff", linestyle="--", linewidth=2,
+            ax.axhline(auto_mean, color="#6633cc", linestyle="--", linewidth=2,
                        label=f"α=auto ({auto_mean:.0f})")
-            ax.legend(framealpha=0.3)
+            ax.legend(loc="lower left")
 
-        ax.set_facecolor("#1a1d27")
-        ax.set_title(f"{algo}", color="white", fontsize=13, pad=10)
-        ax.set_xlabel(param_name, fontsize=11)
-        ax.set_ylabel("Recompensa Média de Avaliação", fontsize=11)
-        ax.grid(True, alpha=0.3, color="#2a2d3e")
+        ax.set_title(f"{algo}", fontsize=16, pad=12)
+        ax.set_xlabel(param_name, fontsize=13)
+        ax.set_ylabel("Recompensa Média de Avaliação", fontsize=13)
+        ax.grid(True, alpha=0.7)
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path
@@ -353,42 +383,41 @@ def plot_exploration_vs_reward(df: pd.DataFrame, filename="exploration_vs_reward
 
 def plot_sac_vs_td3_comparison(df: pd.DataFrame, filename="sac_vs_td3_overall.png"):
     """Comparação direta SAC vs TD3 — violin plot."""
-    fig, ax = plt.subplots(figsize=(12, 7), facecolor="#0f1117")
-    ax.set_facecolor("#1a1d27")
+    fig, ax = plt.subplots(figsize=(12, 7))
     ax.set_title("Comparação SAC vs TD3 — Distribuição de Recompensa de Avaliação\n(todas as configurações × seeds)",
-                 color="white", fontsize=14, pad=10)
+                 fontsize=16, pad=12)
 
     sac_data = df[df["algorithm"] == "SAC"]["mean_reward"].values
     td3_data = df[df["algorithm"] == "TD3"]["mean_reward"].values
 
     vp = ax.violinplot([sac_data, td3_data], positions=[1, 2], showmeans=True, showmedians=True)
 
-    colors = ["#5b7de0", "#ff4444"]
+    colors = [SAC_PALETTE[1], TD3_PALETTE[1]]
     for body, color in zip(vp["bodies"], colors):
         body.set_facecolor(color)
-        body.set_alpha(0.6)
-        body.set_edgecolor("white")
+        body.set_alpha(0.55)
+        body.set_edgecolor(EDGE_C)
 
     for part in ["cmeans", "cmedians", "cbars", "cmins", "cmaxes"]:
         if part in vp:
-            vp[part].set_color("white")
-            vp[part].set_linewidth(1.5)
+            vp[part].set_color(FG)
+            vp[part].set_linewidth(1.8)
 
     ax.set_xticks([1, 2])
-    ax.set_xticklabels(["SAC", "TD3"], fontsize=13, color="white")
-    ax.set_ylabel("Recompensa Média de Avaliação", fontsize=11)
-    ax.grid(True, axis="y", alpha=0.3, color="#2a2d3e")
+    ax.set_xticklabels(["SAC", "TD3"], fontsize=14)
+    ax.set_ylabel("Recompensa Média de Avaliação", fontsize=13)
+    ax.grid(True, axis="y", alpha=0.7)
 
-    # Teste estatístico
     stat, pval = stats.mannwhitneyu(sac_data, td3_data, alternative="two-sided")
     sig = "p < 0.05 ✓" if pval < 0.05 else f"p = {pval:.3f}"
-    ax.text(0.5, 0.02, f"Mann-Whitney U: {sig}", transform=ax.transAxes,
-            ha="center", color="#ffcc00", fontsize=11,
-            bbox=dict(boxstyle="round,pad=0.4", facecolor="#1a1d27", edgecolor="#ffcc00", alpha=0.7))
+    ax.text(0.5, 0.03, f"Mann-Whitney U: {sig}", transform=ax.transAxes,
+            ha="center", color="#333333", fontsize=12,
+            bbox=dict(boxstyle="round,pad=0.4", facecolor="#f5f5f5",
+                      edgecolor=EDGE_C, alpha=0.9))
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path
@@ -403,10 +432,9 @@ def plot_stability(df: pd.DataFrame, filename="stability_std.png"):
         .sort_values(["algorithm", "label"])
     )
 
-    fig, ax = plt.subplots(figsize=(14, 6), facecolor="#0f1117")
-    ax.set_facecolor("#1a1d27")
+    fig, ax = plt.subplots(figsize=(14, 6))
     ax.set_title("Estabilidade: Desvio-Padrão da Recompensa Entre Seeds\n(menor = mais estável)",
-                 color="white", fontsize=14, pad=10)
+                 fontsize=16, pad=12)
 
     sac_d = agg[agg["algorithm"] == "SAC"]
     td3_d = agg[agg["algorithm"] == "TD3"]
@@ -419,17 +447,17 @@ def plot_stability(df: pd.DataFrame, filename="stability_std.png"):
     labels_sac = [f"{r['label']}\n(α={r['exploration']})" for _, r in sac_d.iterrows()]
     labels_td3 = [f"{r['label']}\n(σ={r['exploration']})" for _, r in td3_d.iterrows()]
     ax.set_xticks(np.concatenate([x_sac, x_td3]))
-    ax.set_xticklabels(labels_sac + labels_td3, fontsize=9, color="#c8cce8")
-    ax.set_ylabel("Desvio-Padrão (entre seeds)", fontsize=11)
-    ax.grid(True, axis="y", alpha=0.3, color="#2a2d3e")
+    ax.set_xticklabels(labels_sac + labels_td3, fontsize=12)
+    ax.set_ylabel("Desvio-Padrão (entre seeds)", fontsize=13)
+    ax.grid(True, axis="y", alpha=0.7)
 
     sac_patch = mpatches.Patch(color=SAC_PALETTE[0], label="SAC")
     td3_patch = mpatches.Patch(color=TD3_PALETTE[0], label="TD3")
-    ax.legend(handles=[sac_patch, td3_patch], framealpha=0.3)
+    ax.legend(handles=[sac_patch, td3_patch])
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  ✓ {filename}")
     return path

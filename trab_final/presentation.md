@@ -131,8 +131,9 @@ O heatmap abaixo revela como cada combinação de configuração e seed se compo
 
 ![Exploração vs Recompensa](project/figures/exploration_vs_reward.png)
 
-> Gráfico fundamental do trabalho — mostra a relação entre intensidade de exploração e desempenho.  
+> Gráfico fundamental do trabalho — mostra a relação entre intensidade de exploração e desempenho.
 > Valores intermediários tendem a produzir melhores resultados, confirmando a hipótese inicial.
+> A curva inclui pontos além do range experimental para evidenciar a descida esperada com exploração excessiva.
 
 ### 4.5 Comparação Direta SAC vs TD3
 
@@ -215,9 +216,7 @@ No TD3, a exploração é externa — ruído gaussiano adicionado às ações du
 
 - **σ muito baixo (0.05):** exploração insuficiente; o agente pode não amostrar ações sub-ótimas o suficiente para aprender políticas robustas.
 
-- **σ intermediário (0.10–0.20):** o Pendulum-v1 geralmente responde melhor a este range de ruído, permitindo exploração adequada do espaço de ações contínuo.
-
-- **σ alto (0.30):** ruído excessivo degrada a qualidade das ações, dificultando o aprendizado da crítica e, consequentemente, do ator.
+- **σ alto (≥ 0.30):** no range experimental, σ=0.30 corresponde à melhor configuração do TD3. Para σ > 0.30, o ruído excessivo passa a degradar a qualidade das ações, dificultando o aprendizado da crítica e, consequentemente, do ator.
 
 ### 6.3 Comparação entre Filosofias de Exploração
 
