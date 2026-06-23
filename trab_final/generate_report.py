@@ -339,9 +339,7 @@ def plot_training_time(df: pd.DataFrame, filename="training_time.png"):
     ax.set_ylabel("Tempo (segundos)", fontsize=15)
     ax.grid(True, axis="y", alpha=0.7)
 
-    sac_patch = mpatches.Patch(color=SAC_PALETTE[0], label="SAC")
-    td3_patch = mpatches.Patch(color=TD3_PALETTE[0], label="TD3")
-    ax.legend(handles=[sac_patch, td3_patch])
+
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
@@ -509,9 +507,7 @@ def plot_stability(df: pd.DataFrame, filename="stability_std.png"):
     ax.axvline(x_td3[0] + n_td3_exp - 0.5, color=EDGE_C, linestyle=":",
                linewidth=1.2, alpha=0.7)
 
-    sac_patch = mpatches.Patch(color=SAC_PALETTE[0], label="SAC")
-    td3_patch = mpatches.Patch(color=TD3_PALETTE[0], label="TD3")
-    ax.legend(handles=[sac_patch, td3_patch])
+
 
     plt.tight_layout()
     path = os.path.join(FIGURES_DIR, filename)
