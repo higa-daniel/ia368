@@ -33,22 +33,22 @@ plt.rcParams.update({
     "axes.edgecolor"      : EDGE_C,
     "axes.labelcolor"     : FG,
     "axes.titlecolor"     : FG,
-    "axes.titlesize"      : 18,
-    "axes.labelsize"      : 15,
+    "axes.titlesize"      : 22,
+    "axes.labelsize"      : 18,
     "axes.spines.top"     : False,
     "axes.spines.right"   : False,
     "text.color"          : FG,
     "xtick.color"         : TICK_C,
     "ytick.color"         : TICK_C,
-    "xtick.labelsize"     : 14,
-    "ytick.labelsize"     : 14,
+    "xtick.labelsize"     : 16,
+    "ytick.labelsize"     : 16,
     "grid.color"          : GRID_C,
     "grid.linestyle"      : "--",
     "grid.alpha"          : 0.7,
     "legend.framealpha"   : 0.9,
     "legend.facecolor"    : "white",
     "legend.edgecolor"    : EDGE_C,
-    "legend.fontsize"     : 13,
+    "legend.fontsize"     : 17,
     "font.family"         : "DejaVu Sans",
     "figure.dpi"          : 150,
     "savefig.facecolor"   : BG,
@@ -61,9 +61,9 @@ FIGURES_DIR = os.path.join(PROJECT_DIR, "figures")
 os.makedirs(FIGURES_DIR, exist_ok=True)
 RUN_METADATA = {}
 
-# Paletas categóricas distintas para evitar confusão entre as curvas
-SAC_PALETTE = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf"]  # Set1 style
-TD3_PALETTE = ["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#666666"]  # Dark2 style
+# Paletas sequenciais multi-tom (estilo Viridis) para indicar progressão do parâmetro
+SAC_PALETTE = ['#440154', '#463480', '#355f8d', '#25848e', '#22a884', '#5ec962', '#bddf26']  # Viridis 7 steps
+TD3_PALETTE = ['#440154', '#433e85', '#2e6f8e', '#1f9a8a', '#4ec36b', '#bddf26', '#fde725']  # Viridis 6 steps (plus 1 buffer)
 
 # Configurações além do range experimental — estimadas a partir da tendência
 # observada e da literatura. Usadas em múltiplos gráficos para consistência.
@@ -177,15 +177,15 @@ def plot_learning_curves(ep_series: dict, df: pd.DataFrame, filename="learning_c
     env_name = RUN_METADATA.get("env_name", "Pendulum-v1")
     fig, axes = plt.subplots(1, 2, figsize=(18, 7))
     fig.suptitle(f"Curvas de Aprendizado — {env_name}\n(média ± IC 95% sobre seeds)",
-                 fontsize=18, y=1.01)
+                 fontsize=22, y=1.01)
 
     sac_labels = sorted([l for l in ep_series if l.startswith("SAC")])
     td3_labels = sorted([l for l in ep_series if l.startswith("TD3")])
 
     def plot_group(ax, labels, palette, title):
-        ax.set_title(title, fontsize=18, pad=12)
-        ax.set_xlabel("Episódio", fontsize=15)
-        ax.set_ylabel("Recompensa por Episódio (média móvel)", fontsize=15)
+        ax.set_title(title, fontsize=22, pad=12)
+        ax.set_xlabel("Episódio", fontsize=18)
+        ax.set_ylabel("Recompensa por Episódio (média móvel)", fontsize=18)
         ax.grid(True, alpha=0.7)
 
         for label, color in zip(labels, palette):
@@ -251,7 +251,7 @@ def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
     """
     fig, axes = plt.subplots(1, 2, figsize=(20, 7))
     fig.suptitle("Distribuição da Recompensa de Avaliação Final\n(sobre seeds)",
-                 fontsize=18, y=1.01)
+                 fontsize=22, y=1.01)
 
     for ax, algo, palette, param_name in [
         (axes[0], "SAC", SAC_PALETTE, "α"),
@@ -270,7 +270,7 @@ def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
         ep = EXTRAP[algo]
         n_total = len(data)
         n_exp   = n_total - len(ep["label"])
-        colors  = list(palette[:n_exp]) + [palette[-1]] * len(ep["label"])
+        colors  = list(palette[:n_total])
 
         bp = ax.boxplot(
             data,
@@ -285,9 +285,9 @@ def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
             patch.set_facecolor(color)
             patch.set_alpha(0.80)
 
-        ax.set_title(f"{algo} — Recompensa de Avaliação", fontsize=18, pad=12)
-        ax.set_xticklabels(x_labels, fontsize=13)
-        ax.set_ylabel("Recompensa Média (determinística)", fontsize=15)
+        ax.set_title(f"{algo} — Recompensa de Avaliação", fontsize=22, pad=12)
+        ax.set_xticklabels(x_labels, fontsize=15)
+        ax.set_ylabel("Recompensa Média (determinística)", fontsize=18)
         ax.grid(True, axis="y", alpha=0.7)
 
         # Linha divisora entre configs experimentais e estimadas
@@ -314,7 +314,7 @@ def plot_training_time(df: pd.DataFrame, filename="training_time.png"):
 
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.set_title(f"Tempo Médio de Treinamento por Configuração\n({timesteps:,} steps, {env_name})",
-                 fontsize=18, pad=12)
+                 fontsize=22, pad=12)
 
     sac_data = agg[agg["algorithm"] == "SAC"]
     td3_data = agg[agg["algorithm"] == "TD3"]
@@ -335,8 +335,8 @@ def plot_training_time(df: pd.DataFrame, filename="training_time.png"):
     all_x = np.concatenate([x_sac, x_td3])
     all_labels = bar_labels(sac_data) + bar_labels(td3_data)
     ax.set_xticks(all_x)
-    ax.set_xticklabels(all_labels, fontsize=14)
-    ax.set_ylabel("Tempo (segundos)", fontsize=15)
+    ax.set_xticklabels(all_labels, fontsize=16)
+    ax.set_ylabel("Tempo (segundos)", fontsize=18)
     ax.grid(True, axis="y", alpha=0.7)
 
 
@@ -359,7 +359,7 @@ def plot_exploration_vs_reward(df: pd.DataFrame, filename="exploration_vs_reward
     """
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     fig.suptitle("Impacto do Parâmetro de Exploração na Recompensa Final",
-                 fontsize=18, y=1.02)
+                 fontsize=22, y=1.02)
 
     for ax, algo, palette, param_name in [
         (axes[0], "SAC", SAC_PALETTE, "α (Coeficiente de Entropia)"),
@@ -400,9 +400,9 @@ def plot_exploration_vs_reward(df: pd.DataFrame, filename="exploration_vs_reward
                        label=f"α=auto ({auto_mean:.0f})")
             ax.legend(loc="lower left")
 
-        ax.set_title(f"{algo}", fontsize=18, pad=12)
-        ax.set_xlabel(param_name, fontsize=15)
-        ax.set_ylabel("Recompensa Média de Avaliação", fontsize=15)
+        ax.set_title(f"{algo}", fontsize=22, pad=12)
+        ax.set_xlabel(param_name, fontsize=18)
+        ax.set_ylabel("Recompensa Média de Avaliação", fontsize=18)
         ax.grid(True, alpha=0.7)
 
     plt.tight_layout()
@@ -417,7 +417,7 @@ def plot_sac_vs_td3_comparison(df: pd.DataFrame, filename="sac_vs_td3_overall.pn
     """Comparação direta SAC vs TD3 — violin plot."""
     fig, ax = plt.subplots(figsize=(12, 7))
     ax.set_title("Comparação SAC vs TD3 — Distribuição de Recompensa de Avaliação\n(todas as configurações × seeds)",
-                 fontsize=18, pad=12)
+                 fontsize=22, pad=12)
 
     sac_data = df[df["algorithm"] == "SAC"]["mean_reward"].values
     td3_data = df[df["algorithm"] == "TD3"]["mean_reward"].values
@@ -436,14 +436,14 @@ def plot_sac_vs_td3_comparison(df: pd.DataFrame, filename="sac_vs_td3_overall.pn
             vp[part].set_linewidth(1.8)
 
     ax.set_xticks([1, 2])
-    ax.set_xticklabels(["SAC", "TD3"], fontsize=18)
-    ax.set_ylabel("Recompensa Média de Avaliação", fontsize=15)
+    ax.set_xticklabels(["SAC", "TD3"], fontsize=22)
+    ax.set_ylabel("Recompensa Média de Avaliação", fontsize=18)
     ax.grid(True, axis="y", alpha=0.7)
 
     stat, pval = stats.mannwhitneyu(sac_data, td3_data, alternative="two-sided")
     sig = "p < 0.05 ✓" if pval < 0.05 else f"p = {pval:.3f}"
     ax.text(0.5, 0.03, f"Mann-Whitney U: {sig}", transform=ax.transAxes,
-            ha="center", color="#333333", fontsize=14,
+            ha="center", color="#333333", fontsize=16,
             bbox=dict(boxstyle="round,pad=0.4", facecolor="#f5f5f5",
                       edgecolor=EDGE_C, alpha=0.9))
 
@@ -471,7 +471,7 @@ def plot_stability(df: pd.DataFrame, filename="stability_std.png"):
 
     fig, ax = plt.subplots(figsize=(16, 6))
     ax.set_title("Estabilidade: Desvio-Padrão da Recompensa Entre Seeds\n(menor = mais estável)",
-                 fontsize=18, pad=12)
+                 fontsize=22, pad=12)
 
     sac_d = agg[agg["algorithm"] == "SAC"]
     td3_d = agg[agg["algorithm"] == "TD3"]
@@ -484,8 +484,8 @@ def plot_stability(df: pd.DataFrame, filename="stability_std.png"):
     x_sac = np.arange(len(sac_d))
     x_td3 = np.arange(len(td3_d)) + len(sac_d) + 1
 
-    colors_sac = list(SAC_PALETTE[:n_sac_exp]) + [SAC_PALETTE[-1]] * len(ep_sac["label"])
-    colors_td3 = list(TD3_PALETTE[:n_td3_exp]) + [TD3_PALETTE[-1]] * len(ep_td3["label"])
+    colors_sac = list(SAC_PALETTE[:len(sac_d)])
+    colors_td3 = list(TD3_PALETTE[:len(td3_d)])
 
     ax.bar(x_sac, sac_d["std_across_seeds"], color=colors_sac, alpha=0.85)
     ax.bar(x_td3, td3_d["std_across_seeds"], color=colors_td3, alpha=0.85)
@@ -498,8 +498,8 @@ def plot_stability(df: pd.DataFrame, filename="stability_std.png"):
     labels_td3 = [f"{r['label']}\n(σ={fmt(r['exploration'])})" for _, r in td3_d.iterrows()]
 
     ax.set_xticks(np.concatenate([x_sac, x_td3]))
-    ax.set_xticklabels(labels_sac + labels_td3, fontsize=13)
-    ax.set_ylabel("Desvio-Padrão (entre seeds)", fontsize=15)
+    ax.set_xticklabels(labels_sac + labels_td3, fontsize=15)
+    ax.set_ylabel("Desvio-Padrão (entre seeds)", fontsize=18)
     ax.grid(True, axis="y", alpha=0.7)
 
     # Linhas divisoras entre configs experimentais e estimadas
