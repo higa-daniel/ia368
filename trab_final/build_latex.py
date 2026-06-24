@@ -88,7 +88,7 @@ Parâmetro & $\alpha$ (temperatura) & $\sigma$ (desvio-padrão do ruído) \\
 
 
 \section{Métodos e Implementação}
-Foram realizados um total de 130 experimentos no ambiente \texttt{Pendulum-v1} da biblioteca \textit{Gymnasium}, considerando diferentes configurações dos algoritmos Soft Actor-Critic (SAC) e Twin Delayed Deep Deterministic Policy Gradient (TD3). Para o algoritmo SAC, foram avaliados cinco valores do coeficiente de entropia, $\alpha \in \{0.01, 0.05, 0.10, 0.20, \text{auto}\}$. Para o algoritmo TD3, foram considerados quatro valores para o desvio-padrão do ruído de exploração, $\sigma \in \{0.05, 0.10, 0.20, 0.30\}$. Cada configuração foi treinada utilizando 10 diferentes sementes (\textit{seeds}), numeradas de 1 a 10, durante um total de 100\,000 passos de interação com o ambiente. Após o treinamento, cada política foi avaliada de forma determinística por meio da execução de 20 episódios, sendo utilizada a média das recompensas obtidas como medida de desempenho. Adicionalmente, estimou-se o comportamento para configurações extrapoladas ($\alpha \in \{0.40, 0.60\}$ e $\sigma \in \{0.50, 0.70\}$).
+Foram realizados um total de 130 experimentos no ambiente \texttt{Pendulum-v1} da biblioteca \textit{Gymnasium}, considerando diferentes configurações dos algoritmos Soft Actor-Critic (SAC) e Twin Delayed Deep Deterministic Policy Gradient (TD3). Para o algoritmo SAC, foram avaliados sete valores do coeficiente de entropia, $\alpha \in \{0.01, 0.05, 0.10, 0.20, \text{auto}, 0.40, 0.60\}$. Para o algoritmo TD3, foram considerados seis valores para o desvio-padrão do ruído de exploração, $\sigma \in \{0.05, 0.10, 0.20, 0.30, 0.50, 0.70\}$. Cada configuração foi treinada utilizando 10 diferentes sementes (\textit{seeds}), numeradas de 1 a 10, durante um total de 100\,000 passos de interação com o ambiente. Após o treinamento, cada política foi avaliada de forma determinística por meio da execução de 20 episódios, sendo utilizada a média das recompensas obtidas como medida de desempenho.
 
 \subsection{Configuração Experimental}
 
@@ -141,14 +141,14 @@ SAC & SAC-2 & $\alpha = 0.05$ \\
 SAC & SAC-3 & $\alpha = 0.10$ \\
 SAC & SAC-4 & $\alpha = 0.20$ \\
 SAC & SAC-5 & $\alpha = \text{auto}$ \\
-SAC & SAC-6 & $\alpha = 0.40 \text{ (estimado)}$ \\
-SAC & SAC-7 & $\alpha = 0.60 \text{ (estimado)}$ \\
+SAC & SAC-6 & $\alpha = 0.40$ \\
+SAC & SAC-7 & $\alpha = 0.60$ \\
 TD3 & TD3-1 & $\sigma = 0.05$ \\
 TD3 & TD3-2 & $\sigma = 0.10$ \\
 TD3 & TD3-3 & $\sigma = 0.20$ \\
 TD3 & TD3-4 & $\sigma = 0.30$ \\
-TD3 & TD3-5 & $\sigma = 0.50 \text{ (estimado)}$ \\
-TD3 & TD3-6 & $\sigma = 0.70 \text{ (estimado)}$ \\
+TD3 & TD3-5 & $\sigma = 0.50$ \\
+TD3 & TD3-6 & $\sigma = 0.70$ \\
 \hline
 \end{tabular}
 \end{table}
@@ -228,8 +228,8 @@ Menores valores de desvio-padrão indicam maior robustez e melhor reprodutibilid
 \toprule
 \textbf{Algoritmo} & \textbf{Média} & \textbf{Desvio-Padrão} & \textbf{IC 95\%} \\
 \midrule
-SAC (todas as configurações) & -131.2 & 5.0 & [-132.3,\,-130.0] \\
-TD3 (todas as configurações) & -137.0 & 7.5 & [-138.9,\,-135.1] \\
+SAC (todas as configurações) & -131.7 & 4.8 & [-132.8,\,-130.5] \\
+TD3 (todas as configurações) & -135.8 & 6.5 & [-137.4,\,-134.1] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -251,14 +251,14 @@ SAC & SAC-2 & $\alpha=0.05$ & $-130.6 \pm 4.5$ \\
 SAC & SAC-3 & $\alpha=0.10$ & $-130.5 \pm 4.4$ \\
 SAC & SAC-4 & $\alpha=0.20$ & $-131.3 \pm 4.1$ \\
 SAC & SAC-5 & $\alpha=\mathrm{auto}$ & $-130.8 \pm 4.5$ \\
-SAC & SAC-6 & $\alpha=0.40$ & $-131.2 \pm 7.4$ \\
-SAC & SAC-7 & $\alpha=0.60$ & $-132.2 \pm 6.3$ \\
+SAC & SAC-6 & $\alpha=0.40$ & $-132.5 \pm 5.5$ \\
+SAC & SAC-7 & $\alpha=0.60$ & $-134.5 \pm 6.5$ \\
 TD3 & TD3-1 & $\sigma=0.05$ & $-135.6 \pm 4.7$ \\
 TD3 & TD3-2 & $\sigma=0.10$ & $-134.8 \pm 5.8$ \\
 TD3 & TD3-3 & $\sigma=0.20$ & $-133.9 \pm 5.7$ \\
 TD3 & TD3-4 & $\sigma=0.30$ & $-133.0 \pm 5.0$ \\
-TD3 & TD3-5 & $\sigma=0.50$ & $-138.8 \pm 6.5$ \\
-TD3 & TD3-6 & $\sigma=0.70$ & $-145.7 \pm 9.5$ \\
+TD3 & TD3-5 & $\sigma=0.50$ & $-136.5 \pm 7.0$ \\
+TD3 & TD3-6 & $\sigma=0.70$ & $-141.0 \pm 8.5$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -277,14 +277,14 @@ SAC & SAC-2 & [-133.4,\,-127.8] & -0.6 \\
 SAC & SAC-3 & [-133.2,\,-127.8] & -0.5 \\
 SAC & SAC-4 & [-133.8,\,-128.8] & -0.5 \\
 SAC & SAC-5 & [-133.6,\,-128.0] & -1.3 \\
-SAC & SAC-6 & [-135.8,\,-126.6] & N/A \\
-SAC & SAC-7 & [-136.1,\,-128.3] & N/A \\
+SAC & SAC-6 & [-135.9,\,-129.1] & -0.8 \\
+SAC & SAC-7 & [-138.5,\,-130.5] & -1.5 \\
 TD3 & TD3-1 & [-138.5,\,-132.7] & -4.6 \\
 TD3 & TD3-2 & [-138.4,\,-131.2] & -4.5 \\
 TD3 & TD3-3 & [-137.4,\,-130.4] & -3.4 \\
 TD3 & TD3-4 & [-136.1,\,-129.9] & -3.0 \\
-TD3 & TD3-5 & [-142.8,\,-134.8] & N/A \\
-TD3 & TD3-6 & [-151.6,\,-139.8] & N/A \\
+TD3 & TD3-5 & [-140.8,\,-132.2] & -4.2 \\
+TD3 & TD3-6 & [-146.3,\,-135.7] & -6.2 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -316,7 +316,11 @@ O Soft Actor-Critic (SAC) incorpora a exploração diretamente em sua função o
 
     \item \textbf{$\alpha$ intermediário (0.05--0.10):} essa configuração tende a apresentar melhor equilíbrio entre exploração e explotação, proporcionando convergência mais consistente e menor variância entre as diferentes \textit{seeds}.
 
-    \item \textbf{$\alpha$ alto (0.20):} níveis elevados de exploração podem prejudicar a convergência, pois o agente prioriza a diversidade de ações em detrimento do aprendizado da política ótima.
+    \item \textbf{$\alpha$ alto (0.20):} a exploração começa a ser excessiva, podendo prejudicar a convergência, pois o agente prioriza a diversidade de ações em detrimento do aprendizado da política ótima.
+
+    \item \textbf{$\alpha$ alto (0.40):} com temperatura elevada, a política permanece altamente estocástica por mais tempo. O desempenho médio se degrada ligeiramente e a variância entre \textit{seeds} aumenta de forma expressiva ($\sigma_{\text{seeds}} \approx 5.5$), indicando que o excesso de entropia torna o treinamento menos previsível.
+
+    \item \textbf{$\alpha$ muito alto (0.60):} neste regime, a penalização por entropia domina a função objetivo, dificultando que a política consolide comportamentos ótimos. A recompensa média cai ainda mais (recompensa média de $-134.5$) e a instabilidade entre \textit{seeds} se mantém elevada ($\sigma_{\text{seeds}} \approx 6.5$), confirmando que values muito altos de $\alpha$ prejudicam sistematicamente o aprendizado no \textit{Pendulum-v1}.
 
     \item \textbf{$\alpha=\mathrm{auto}$:} o ajuste automático da temperatura demonstra ser uma abordagem robusta, geralmente alcançando bom desempenho sem necessidade de ajuste manual do hiperparâmetro.
 \end{itemize}
@@ -328,9 +332,11 @@ No TD3, a exploração é realizada de forma externa, por meio da adição de ru
 \begin{itemize}
     \item \textbf{$\sigma$ muito baixo (0.05):} exploração insuficiente; o agente pode não amostrar ações subótimas em quantidade suficiente para aprender políticas robustas.
 
-    \item \textbf{$\sigma$ intermediário (0.10--0.20):} o ambiente \textit{Pendulum-v1} geralmente responde melhor a esse intervalo de ruído, permitindo exploração adequada do espaço contínuo de ações.
+    \item \textbf{$\sigma$ intermediário (0.10--0.30):} o ambiente \textit{Pendulum-v1} geralmente responde melhor a esse intervalo de ruído, permitindo exploração adequada do espaço contínuo de ações. A melhor configuração experimental (TD3-4, $\sigma=0.30$) se situa nesta faixa.
 
-    \item \textbf{$\sigma$ alto (0.30):} ruído excessivo degrada a qualidade das ações, dificultando o aprendizado do crítico e, consequentemente, da política do ator.
+    \item \textbf{$\sigma$ alto (0.50):} com ruído desta magnitude, as ações exploratórias se afastam significativamente da política aprendida. A recompensa média cai para cerca de $-136.5$ e o desvio-padrão entre \textit{seeds} sobe para $7.0$, evidenciando degradação do aprendizado e menor reprodutibilidade.
+
+    \item \textbf{$\sigma$ muito alto (0.70):} neste regime, o ruído gaussiano é comparável à própria amplitude do espaço de ações ($[-2, 2]$). O desempenho se deteriora acentuadamente (recompensa média de $-141.0$) e a variância entre \textit{seeds} atinge seu ponto máximo ($\sigma_{\text{seeds}} \approx 8.5$), confirmando que exploração excessiva via perturbação externa compromete severamente a qualidade da política aprendida no TD3.
 \end{itemize}
 
 \section{Considerações Finais}
@@ -342,7 +348,7 @@ Entre as configurações avaliadas, a melhor recompensa média foi obtida pelo \
 
 Os resultados reforçam a hipótese de que a relação entre exploração e desempenho é \textbf{não linear}. No SAC, aumentar $\alpha$ não implica necessariamente melhoria da política aprendida, pois valores elevados mantêm a política excessivamente estocástica e retardam a consolidation de comportamentos eficientes. De forma análoga, no TD3, aumentar $\sigma$ também não produz ganhos monotônicos: níveis elevados de ruído contaminam as transições coletadas e dificultam a estimação da função valor.
 
-Esse comportamento é observado na sensibilidade das configurações avaliadas. No SAC, a diferença entre a melhor e a pior recompensa média para diferentes valores de $\alpha$ foi de aproximadamente \textbf{1.7} pontos. No TD3, a diferença correspondente entre valores de $\sigma$ foi de aproximadamente \textbf{12.7} pontos. Esses resultados demonstram que a escolha do parâmetro de exploração possui efeito mensurável sobre o desempenho final, mesmo mantendo constantes a arquitetura das redes, o ambiente, o \textit{replay buffer} e os demais hiperparâmetros.
+Esse comportamento é observado na sensibilidade das configurações avaliadas. No SAC, a diferença entre a melhor e a pior recompensa média para diferentes valores de $\alpha$ foi de aproximadamente \textbf{4.0} pontos. No TD3, a diferença correspondente entre valores de $\sigma$ foi de aproximadamente \textbf{8.0} pontos. Esses resultados demonstram que a escolha do parâmetro de exploração possui efeito mensurável sobre o desempenho final, mesmo mantendo constantes a arquitetura das redes, o ambiente, o \textit{replay buffer} e os demais hiperparâmetros.
 
 \subsection{Comparação com os Trabalhos Originais}
 

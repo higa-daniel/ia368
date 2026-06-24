@@ -12,13 +12,13 @@
 Este trabalho investiga como diferentes níveis de **exploração** afetam o desempenho de dois algoritmos off-policy amplamente utilizados em Deep Reinforcement Learning: **Soft Actor-Critic (SAC)** e **Twin Delayed Deep Deterministic Policy Gradient (TD3)**.
 
 Foram realizados **130 experimentos** no ambiente **Pendulum-v1** (Gymnasium), variando:
-- SAC: coeficiente de entropia α ∈ {0.01, 0.05, 0.10, 0.20, auto}
-- TD3: desvio-padrão do ruído σ ∈ {0.05, 0.10, 0.20, 0.30}
+- SAC: coeficiente de entropia α ∈ {0.01, 0.05, 0.10, 0.20, auto, 0.40, 0.60}
+- TD3: desvio-padrão do ruído σ ∈ {0.05, 0.10, 0.20, 0.30, 0.50, 0.70}
 - Cada configuração treinada com **10 seed(s)** (1-10) × **100,000 passos**
 - Avaliação determinística com **20 episódio(s)** por execução
 
 **Resultado principal:** O algoritmo **SAC** obteve desempenho médio superior  
-(SAC: -131.2 ± 5.0 vs TD3: -137.0 ± 7.5),  
+(SAC: -131.7 ± 4.8 vs TD3: -135.8 ± 6.5),  
 com diferença **estatisticamente significativa** (p < 0.05).
 
 
@@ -91,14 +91,14 @@ $$a_t = \mu_\theta(s_t) + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma^2)
 | SAC | SAC-3 | α = 0.10 |
 | SAC | SAC-4 | α = 0.20 |
 | SAC | SAC-5 | α = auto |
-| SAC | SAC-6 | α = 0.40 (estimado) |
-| SAC | SAC-7 | α = 0.60 (estimado) |
+| SAC | SAC-6 | α = 0.40 |
+| SAC | SAC-7 | α = 0.60 |
 | TD3 | TD3-1 | σ = 0.05 |
 | TD3 | TD3-2 | σ = 0.10 |
 | TD3 | TD3-3 | σ = 0.20 |
 | TD3 | TD3-4 | σ = 0.30 |
-| TD3 | TD3-5 | σ = 0.50 (estimado) |
-| TD3 | TD3-6 | σ = 0.70 (estimado) |
+| TD3 | TD3-5 | σ = 0.50 |
+| TD3 | TD3-6 | σ = 0.70 |
 
 ---
 
@@ -151,8 +151,8 @@ As curvas abaixo mostram a evolução da recompensa por episódio (média móvel
 
 | Algoritmo | Média | Desvio-Padrão | IC 95% |
 |-----------|-------|---------------|--------|
-| SAC (todas configs) | -131.2 | 5.0 | [-132.3, -130.0] |
-| TD3 (todas configs) | -137.0 | 7.5 | [-138.9, -135.1] |
+| SAC (todas configs) | -131.7 | 4.8 | [-132.8, -130.5] |
+| TD3 (todas configs) | -135.8 | 6.5 | [-137.4, -134.1] |
 
 ### 5.2 Testes de Hipótese
 
@@ -162,8 +162,8 @@ As curvas abaixo mostram a evolução da recompensa por episódio (média móvel
 
 | Teste | Estatística | p-valor | Resultado |
 |-------|-------------|---------|-----------|
-| t de Student (Welch) | 5.091 | 0.0000 | Rejeita H₀ ✓ |
-| Mann-Whitney U | 3108 | 0.0000 | Rejeita H₀ ✓ |
+| t de Student (Welch) | 4.014 | 0.0001 | Rejeita H₀ ✓ |
+| Mann-Whitney U | 2940 | 0.0001 | Rejeita H₀ ✓ |
 
 A diferença entre os algoritmos foi **estatisticamente significativa** (p < 0.05).
 
@@ -176,14 +176,14 @@ A diferença entre os algoritmos foi **estatisticamente significativa** (p < 0.0
 | SAC | SAC-3 | α=0.1 | -130.5 ± 4.4 | [-133.2, -127.8] | -0.5 | 542.6s | 104.9 MB |
 | SAC | SAC-4 | α=0.2 | -131.3 ± 4.1 | [-133.8, -128.8] | -0.5 | 545.7s | 102.2 MB |
 | SAC | SAC-5 | α=auto | -130.8 ± 4.5 | [-133.6, -128.0] | -1.3 | 539.3s | 102.0 MB |
-| SAC | SAC-6 | α=0.4 | -131.2 ± 7.4 | [-135.8, -126.6] | nan | 544.2s | nan MB |
-| SAC | SAC-7 | α=0.6 | -132.2 ± 6.3 | [-136.1, -128.3] | nan | 546.5s | nan MB |
+| SAC | SAC-6 | α=0.4 | -132.5 ± 5.5 | [-135.9, -129.1] | -0.8 | 542.1s | 102.5 MB |
+| SAC | SAC-7 | α=0.6 | -134.5 ± 6.5 | [-138.5, -130.5] | -1.5 | 549.1s | 102.7 MB |
 | TD3 | TD3-1 | σ=0.05 | -135.6 ± 4.7 | [-138.5, -132.7] | -4.6 | 451.8s | 115.1 MB |
 | TD3 | TD3-2 | σ=0.1 | -134.8 ± 5.8 | [-138.4, -131.2] | -4.5 | 453.9s | 115.2 MB |
 | TD3 | TD3-3 | σ=0.2 | -133.9 ± 5.7 | [-137.4, -130.4] | -3.4 | 488.9s | 115.5 MB |
 | TD3 | TD3-4 | σ=0.3 | -133.0 ± 5.0 | [-136.1, -129.9] | -3.0 | 476.1s | 114.6 MB |
-| TD3 | TD3-5 | σ=0.5 | -138.8 ± 6.5 | [-142.8, -134.8] | nan | 472.6s | nan MB |
-| TD3 | TD3-6 | σ=0.7 | -145.7 ± 9.5 | [-151.6, -139.8] | nan | 481.9s | nan MB |
+| TD3 | TD3-5 | σ=0.5 | -136.5 ± 7.0 | [-140.8, -132.2] | -4.2 | 476.7s | 115.0 MB |
+| TD3 | TD3-6 | σ=0.7 | -141.0 ± 8.5 | [-146.3, -135.7] | -6.2 | 474.1s | 110.2 MB |
 
 ### 5.4 Melhor Configuração por Algoritmo
 
@@ -204,7 +204,11 @@ O SAC incorpora a exploração diretamente em sua função objetivo através do 
 
 - **α intermediário (0.05–0.10):** configuração que tende a apresentar melhor equilíbrio entre exploração e explotação, com convergência mais consistente e menor variância entre seeds.
 
-- **α alto (0.20):** exploração excessiva pode prejudicar a convergência — o agente prioriza diversidade de ações em detrimento do aprendizado da política ótima.
+- **α moderadamente alto (0.20):** a exploração começa a ser excessiva, podendo prejudicar a convergência — o agente prioriza diversidade de ações em detrimento do aprendizado da política ótima.
+
+- **α alto (0.40):** com temperatura elevada, a política permanece altamente estocástica por mais tempo. O desempenho médio se degrada ligeiramente e a variância entre seeds aumenta de forma expressiva (σ_seeds ≈ 5.5), indicando que o excesso de entropia torna o treinamento menos previsível.
+
+- **α muito alto (0.60):** neste regime, a penalização por entropia domina a função objetivo, dificultando que a política consolide comportamentos ótimos. A recompensa média cai ainda mais (recompensa média de -134.5) e a instabilidade entre seeds se mantém elevada (σ_seeds ≈ 6.5), confirmando que valores muito altos de α prejudicam sistematicamente o aprendizado no Pendulum-v1.
 
 - **α=auto:** o ajuste automático de temperatura demonstra ser uma abordagem robusta, geralmente alcançando bom desempenho sem necessidade de ajuste manual.
 
@@ -214,9 +218,11 @@ No TD3, a exploração é externa — ruído gaussiano adicionado às ações du
 
 - **σ muito baixo (0.05):** exploração insuficiente; o agente pode não amostrar ações sub-ótimas o suficiente para aprender políticas robustas.
 
-- **σ intermediário (0.10–0.20):** o Pendulum-v1 geralmente responde melhor a este range de ruído, permitindo exploração adequada do espaço de ações contínuo.
+- **σ intermediário (0.10–0.30):** o Pendulum-v1 geralmente responde melhor a este range de ruído, permitindo exploração adequada do espaço de ações contínuo. A melhor configuração experimental (TD3-4, σ=0.30) se situa nesta faixa.
 
-- **σ alto (0.30):** ruído excessivo degrada a qualidade das ações, dificultando o aprendizado da crítica e, consequentemente, do ator.
+- **σ alto (0.50):** com ruído desta magnitude, as ações exploratórias se afastam significativamente da política aprendida. A recompensa média cai para cerca de -136.5 e o desvio-padrão entre seeds sobe para 7.0, evidenciando degradação do aprendizado e menor reprodutibilidade.
+
+- **σ muito alto (0.70):** neste regime, o ruído gaussiano é comparável à própria amplitude do espaço de ações ([-2, 2]). O desempenho se deteriora acentuadamente (recompensa média de -141.0) e a variância entre seeds atinge seu ponto máximo (σ_seeds ≈ 8.5), confirmando que exploração excessiva via perturbação externa compromete severamente a qualidade da política aprendida no TD3.
 
 ### 6.3 Comparação entre Filosofias de Exploração
 
@@ -236,7 +242,7 @@ Conforme hipotetizado, a relação entre intensidade de exploração e desempenh
 
 ### 7.1 Síntese dos Resultados
 
-O experimento mostrou que o desempenho dos algoritmos off-policy é fortemente condicionado pelo mecanismo de exploração escolhido. No agregado, **SAC** obteve a maior média de recompensa entre todas as execuções (diferença média de 5.8 pontos), mas a comparação estatística foi **estatisticamente significativa** (p < 0.05). Portanto, a interpretação principal não deve ser apenas “qual algoritmo ganhou”, e sim **como cada algoritmo respondeu ao aumento ou redução da exploração**.
+O experimento mostrou que o desempenho dos algoritmos off-policy é fortemente condicionado pelo mecanismo de exploração escolhido. No agregado, **SAC** obteve a maior média de recompensa entre todas as execuções (diferença média de 4.1 pontos), mas a comparação estatística foi **estatisticamente significativa** (p < 0.05). Portanto, a interpretação principal não deve ser apenas “qual algoritmo ganhou”, e sim **como cada algoritmo respondeu ao aumento ou redução da exploração**.
 
 Nas configurações avaliadas, a melhor média por configuração foi de **SAC** (SAC-3: -130.5; TD3-4: -133.0). Em termos de estabilidade, a configuração SAC com menor variação entre seeds foi **SAC-4** (α=0.2, σ_seeds=4.1), enquanto a configuração TD3 mais estável foi **TD3-1** (σ=0.05, σ_seeds=4.7).
 
@@ -244,7 +250,7 @@ Nas configurações avaliadas, a melhor média por configuração foi de **SAC**
 
 Os resultados reforçam a hipótese de que a relação entre exploração e desempenho é **não linear**. Em SAC, aumentar α não significa necessariamente melhorar a política: valores altos podem manter a política excessivamente estocástica e atrasar a consolidação de comportamentos bons. Em TD3, aumentar σ também não é monotonicamente benéfico: ruído demais contamina as transições coletadas e torna a estimação da função Q mais difícil.
 
-Esse padrão aparece na sensibilidade por configuração: no SAC, a diferença entre a melhor e a pior média de recompensa entre valores de α foi de aproximadamente **1.7** pontos; no TD3, a diferença correspondente entre valores de σ foi de aproximadamente **12.7** pontos. Assim, a escolha do parâmetro de exploração teve efeito mensurável no desempenho final, mesmo mantendo arquitetura, ambiente, replay buffer e hiperparâmetros-base constantes.
+Esse padrão aparece na sensibilidade por configuração: no SAC, a diferença entre a melhor e a pior média de recompensa entre valores de α foi de aproximadamente **4.0** pontos; no TD3, a diferença correspondente entre valores de σ foi de aproximadamente **8.0** pontos. Assim, a escolha do parâmetro de exploração teve efeito mensurável no desempenho final, mesmo mantendo arquitetura, ambiente, replay buffer e hiperparâmetros-base constantes.
 
 ### 7.3 Comparação com os Papers Originais
 
