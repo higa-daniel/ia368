@@ -196,6 +196,15 @@ A largura das caixas indica a variabilidade entre as diferentes \textit{seeds}. 
 
 Este é um dos principais resultados do trabalho, evidenciando a relação entre intensidade de exploração e desempenho. Observa-se que valores intermediários tendem a produzir melhores resultados, corroborando a hipótese inicial.
 
+\subsection{Comparação Direta SAC vs TD3}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{project/figures/sac_vs_td3_overall}
+    \caption{Comparação da distribuição de recompensa de avaliação entre SAC e TD3 (todas as configurações).}
+    \label{fig:sac_vs_td3_overall}
+\end{figure}
+
 \subsection{Estabilidade Entre Seeds}
 
 \begin{figure}[H]
@@ -320,7 +329,7 @@ O Soft Actor-Critic (SAC) incorpora a exploração diretamente em sua função o
 
     \item \textbf{$\alpha$ alto (0.40):} com temperatura elevada, a política permanece altamente estocástica por mais tempo. O desempenho médio se degrada ligeiramente e a variância entre \textit{seeds} aumenta de forma expressiva ($\sigma_{\text{seeds}} \approx 5.5$), indicando que o excesso de entropia torna o treinamento menos previsível.
 
-    \item \textbf{$\alpha$ muito alto (0.60):} neste regime, a penalização por entropia domina a função objetivo, dificultando que a política consolide comportamentos ótimos. A recompensa média cai ainda mais (recompensa média de $-134.5$) e a instabilidade entre \textit{seeds} se mantém elevada ($\sigma_{\text{seeds}} \approx 6.5$), confirmando que values muito altos de $\alpha$ prejudicam sistematicamente o aprendizado no \textit{Pendulum-v1}.
+    \item \textbf{$\alpha$ muito alto (0.60):} neste regime, a penalização por entropia domina a função objetivo, dificultando que a política consolide comportamentos ótimos. A recompensa média cai ainda mais (recompensa média de $-134.5$) e a instabilidade entre \textit{seeds} se mantém elevada ($\sigma_{\text{seeds}} \approx 6.5$), confirmando que valores muito altos de $\alpha$ prejudicam sistematicamente o aprendizado no \textit{Pendulum-v1}.
 
     \item \textbf{$\alpha=\mathrm{auto}$:} o ajuste automático da temperatura demonstra ser uma abordagem robusta, geralmente alcançando bom desempenho sem necessidade de ajuste manual do hiperparâmetro.
 \end{itemize}
@@ -342,11 +351,13 @@ No TD3, a exploração é realizada de forma externa, por meio da adição de ru
 \section{Considerações Finais}
 
 \subsection{Síntese dos Resultados}
+O experimento mostrou que o desempenho dos algoritmos \textit{off-policy} é fortemente condicionado pelo mecanismo de exploração escolhido. No agregado, o \textbf{SAC} obteve a maior média de recompensa entre todas as execuções (diferença média de 4.1 pontos), com significância estatística ($p < 0.05$). Portanto, a interpretação principal não deve ser apenas ``qual algoritmo ganhou'', e sim \textbf{como cada algoritmo respondeu ao aumento ou redução da exploração}.
+
 Entre as configurações avaliadas, a melhor recompensa média foi obtida pelo \textbf{SAC-3} ($-130.5$), enquanto a melhor configuração do TD3 foi a \textbf{TD3-4} ($-133.0$). Em termos de estabilidade, a configuração SAC com menor variação entre \textit{seeds} foi a \textbf{SAC-4} ($\alpha=0.2$, $\sigma_{\text{seeds}}=4.1$), enquanto a configuração TD3 mais estável foi a \textbf{TD3-1} ($\sigma=0.05$, $\sigma_{\text{seeds}}=4.7$).
 
 \subsection{Interpretação Sobre Exploração}
 
-Os resultados reforçam a hipótese de que a relação entre exploração e desempenho é \textbf{não linear}. No SAC, aumentar $\alpha$ não implica necessariamente melhoria da política aprendida, pois valores elevados mantêm a política excessivamente estocástica e retardam a consolidation de comportamentos eficientes. De forma análoga, no TD3, aumentar $\sigma$ também não produz ganhos monotônicos: níveis elevados de ruído contaminam as transições coletadas e dificultam a estimação da função valor.
+Os resultados reforçam a hipótese de que a relação entre exploração e desempenho é \textbf{não linear}. No SAC, aumentar $\alpha$ não implica necessariamente melhoria da política aprendida, pois valores elevados mantêm a política excessivamente estocástica e retardam a consolidação de comportamentos eficientes. De forma análoga, no TD3, aumentar $\sigma$ também não produz ganhos monotônicos: níveis elevados de ruído contaminam as transições coletadas e dificultam a estimação da função valor.
 
 Esse comportamento é observado na sensibilidade das configurações avaliadas. No SAC, a diferença entre a melhor e a pior recompensa média para diferentes valores de $\alpha$ foi de aproximadamente \textbf{4.0} pontos. No TD3, a diferença correspondente entre valores de $\sigma$ foi de aproximadamente \textbf{8.0} pontos. Esses resultados demonstram que a escolha do parâmetro de exploração possui efeito mensurável sobre o desempenho final, mesmo mantendo constantes a arquitetura das redes, o ambiente, o \textit{replay buffer} e os demais hiperparâmetros.
 
@@ -356,12 +367,47 @@ Os resultados obtidos são consistentes com a motivação apresentada por Haarno
 
 Os resultados também dialogam com o trabalho de Fujimoto et al. (2018), no qual o TD3 foi proposto para reduzir erros de aproximação e o \textit{overestimation bias} por meio do uso de \textit{twin critics}, atualizações atrasadas da política e \textit{target policy smoothing}. Embora este estudo não avalie diretamente o \textit{overestimation bias}, ele investiga o efeito da exploração baseada em ruído externo. O comportamento observado mostra que, para valores adequados de $\sigma$, o TD3 mantém desempenho competitivo; entretanto, níveis inadequados de ruído tornam a política determinística mais sensível à qualidade das amostras coletadas.
 
+A comparação com os artigos deve ser interpretada qualitativamente: os \textit{papers} originais avaliam conjuntos mais amplos de tarefas contínuas, enquanto este estudo isola o efeito dos parâmetros de exploração em \texttt{Pendulum-v1}. Por isso, a conclusão comparativa é: \textbf{os resultados não contradizem os \textit{papers} originais; eles refinam a leitura deles para o eixo específico de exploração}. O SAC tende a ser mais naturalmente associado a robustez por causa da entropia, mas ainda depende da temperatura. O TD3 reduz problemas importantes de estimação de valor, mas sua exploração continua dependente de uma escolha externa de ruído.
+
+\subsection{Limitações e Próximos Passos}
+
+Como a execução utiliza o protocolo completo de 10 \textit{seeds} e 100.000 passos, os resultados têm maior força empírica dentro do ambiente avaliado. Além disso, \texttt{Pendulum-v1} é um ambiente útil para controle contínuo de baixo custo, mas não cobre tarefas com exploração mais difícil, recompensa esparsa ou dinâmicas de alta dimensão. Para aproximar mais o estudo dos artigos originais, os próximos passos mais importantes são:
+
+\begin{enumerate}
+    \item Repetir o estudo em \textbf{MountainCarContinuous-v0}, onde exploração eficiente tende a ser mais decisiva.
+    \item Adicionar métricas específicas de estabilidade, como área sob a curva de aprendizado e episódio de convergência.
+    \item Comparar também com \textit{baselines} adicionais, como DDPG, para isolar melhor o ganho específico do TD3.
+    \item Avaliar se $\alpha$ automático no SAC reduz a sensibilidade em ambientes mais difíceis.
+\end{enumerate}
+
+\subsection{Conclusão Final}
+
+O estudo confirma que exploração não é apenas um detalhe de implementação, mas um componente central da aprendizagem \textit{off-policy}. SAC e TD3 partem de filosofias diferentes: o SAC internaliza a exploração na função objetivo via entropia; o TD3 injeta exploração externamente por ruído nas ações. Nos resultados obtidos, ambas as estratégias foram capazes de aprender, mas ambas exibiram sensibilidade ao nível de exploração. A principal contribuição do experimento é tornar essa sensibilidade visível, quantificável e comparável em um \textit{pipeline} reprodutível.
+
 \section{Possíveis Extensões}
 
 \subsection{Curto Prazo}
 
 \begin{itemize}
+    \item Incluir \textbf{DDPG} como \textit{baseline} sem \textit{Twin Critics};
     \item Avaliar o desempenho em ambientes mais complexos, como \textbf{MountainCarContinuous-v0}, caracterizado por recompensas esparsas e maior dificuldade de exploração;
+    \item Testar com mais \textit{seeds} para maior poder estatístico.
+\end{itemize}
+
+\subsection{Médio Prazo}
+
+\begin{itemize}
+    \item Investigar \textbf{estratégias alternativas de ruído no TD3} (Ornstein-Uhlenbeck, ruído parametrizado);
+    \item Avaliar \textbf{adaptação automática} de $\sigma$ no TD3 (similar ao $\alpha=\mathrm{auto}$ do SAC);
+    \item Ambientes de maior complexidade: HalfCheetah-v4, Ant-v4.
+\end{itemize}
+
+\subsection{Longo Prazo}
+
+\begin{itemize}
+    \item Aplicar em ambientes de \textbf{robótica} (Farama Gymnasium Robotics);
+    \item Comparar com exploração baseada em \textbf{curiosidade intrínseca} (RND, ICM);
+    \item Investigar exploração baseada em \textbf{incerteza epistêmica} (\textit{ensemble methods}).
 \end{itemize}
 
 
