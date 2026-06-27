@@ -3,7 +3,7 @@
 
 > **Disciplina:** IA368 — Tópicos em Inteligência Artificial  
 > **UNICAMP — 2026**  
-> **Autores:** Daniel Higa & Luan  
+> **Autores:** Luan Ornelas de Souza e Daniel E. Higa
 
 ---
 

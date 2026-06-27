@@ -1,7 +1,7 @@
 """
 run_experiments.py
 Experimento: Impacto da Exploração em SAC vs TD3 — Pendulum-v1
-Autores: Daniel Higa & Luan
+Autores: Luan Ornelas de Souza e Daniel E. Higa
 Disciplina: IA368 — UNICAMP 2026
 
 Configuração completa:

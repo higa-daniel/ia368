@@ -261,7 +261,7 @@ def plot_boxplots(df: pd.DataFrame, filename="boxplots_final_reward.png"):
     range experimental (compatíveis com as mostradas na Seção 4.3).
     """
     fig, axes = plt.subplots(1, 2, figsize=(20, 7))
-    fig.suptitle("Distribuição da Recompensa de Avaliação Final\n(sobre seeds)",
+    fig.suptitle("Distribuição da Recompensa de Avaliação Final",
                  fontsize=22, y=1.01)
 
     for ax, algo, palette, param_name in [
@@ -686,7 +686,7 @@ def generate_markdown(df: pd.DataFrame, stats: dict, summary: pd.DataFrame, fig_
 
 > **Disciplina:** IA368 — Tópicos em Inteligência Artificial  
 > **UNICAMP — 2026**  
-> **Autores:** Daniel Higa & Luan  
+> **Autores:** Luan Ornelas de Souza e Daniel E. Higa
 
 ---
 
